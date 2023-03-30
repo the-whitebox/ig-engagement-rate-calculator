@@ -1,1 +1,1 @@
-# ig-engagement_rate_calculator
+# ig-engagement-rate-calculator
