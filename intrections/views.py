@@ -15,7 +15,7 @@ from intrections.models import CustomUser
 
 def format_number(num):
     if num >= 1000000:
-        return f"{num / 1000000:.1f}m"
+        return f"{num / 1000000:.1f}M"
     elif num >= 1000:
         return f"{num / 1000:.2f}k"
     else:
@@ -150,14 +150,13 @@ class CustomUserLogin(APIView):
         role = request.data.get('role')
         User = get_user_model()
         try:
-            user = User.objects.get(email=email, role=role)
+            user = User.objects.get(email=email)
         except User.DoesNotExist:
             user = User.objects.create_user(email=email, role=role)
         try:
             token = Token.objects.get(user=user)
-            return Response({'message': 'User token already available', 'access_token': str(token.key)})
+            return Response({'access_token': str(token.key)})
         except Token.DoesNotExist:
             token = Token.objects.create(user=user)
-            print(token.key)
             return Response({'access_token': str(token.key)})
 
