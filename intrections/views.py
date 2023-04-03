@@ -11,6 +11,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework.authtoken.models import Token
 from instagram_calculater.settings import env
 from intrections.models import CustomUser
+from rest_framework import status
 
 
 def format_number(num):
@@ -35,12 +36,12 @@ def user_info(request, username):
         message = {
             "error": "You can only make one request per minute."
         }
-        return Response(message)
+        return Response(message, status=status.HTTP_204_NO_CONTENT)
     if user_request.calculation_count >= 3:
         message = {
             "error": "You have exceeded the limit of 3 calculations."
         }
-        return Response(message)
+        return Response(message, status=status.HTTP_204_NO_CONTENT)
 
     user_request.calculation_count += 1
     user_request.last_request_time = timezone.now() # Update timestamp
@@ -63,21 +64,21 @@ def user_info(request, username):
         message = {
             "error": f"The user {username} is not available or invalid. Please add correct username."
         }
-        return Response(message)
+        return Response(message, status=status.HTTP_204_NO_CONTENT)
 
     if user_info_response.get('data') is None:
         # Return a message if the data key is not present in the response
         message = {
             "error": f"The user {username} is not available or invalid. Please add correct username."
         }
-        return Response(message)
+        return Response(message, status=status.HTTP_204_NO_CONTENT)
 
     if user_info_response['data']['user']["is_private"]:
         # Return a message if the user is private
         message = {
             "error": f"The user {username} is private and you cannot access the data."
         }
-        return Response(message)
+        return Response(message, status=status.HTTP_204_NO_CONTENT)
 
     user_id = user_info_response['data']['user']["pk_id"]
 
@@ -138,7 +139,7 @@ def user_info(request, username):
     }
 
 
-    return Response(data)
+    return Response(data, status=status.HTTP_200_OK)
 
 
 
