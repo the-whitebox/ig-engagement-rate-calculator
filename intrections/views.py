@@ -31,12 +31,12 @@ def user_info(request, username):
     user_request, created = CustomUser.objects.get_or_create(email=user)
 
     # Check timestamp of last request
-    if user_request.last_request_time is not None and \
-            user_request.last_request_time + timedelta(minutes=1) > timezone.now():
-        message = {
-            "error": "You can only make one request per minute."
-        }
-        return Response(message, status=status.HTTP_202_ACCEPTED)
+    # if user_request.last_request_time is not None and \
+    #         user_request.last_request_time + timedelta(minutes=1) > timezone.now():
+    #     message = {
+    #         "error": "You can only make one request per minute."
+    #     }
+    #     return Response(message, status=status.HTTP_202_ACCEPTED)
     if user_request.calculation_count >= 3:
         message = {
             "error": "You have exceeded the limit of 3 calculations."
