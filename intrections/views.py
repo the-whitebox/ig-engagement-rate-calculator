@@ -12,6 +12,15 @@ from rest_framework.authtoken.models import Token
 from instagram_calculater.settings import env
 from intrections.models import CustomUser
 from rest_framework import status
+import boto3
+import os
+
+# Create a Boto3 client for Scaleway Object Storage
+s3 = boto3.client('s3',
+                  region_name=env('REGION_NAME'),
+                  endpoint_url=env('ENDPOINT_URL'),
+                  aws_access_key_id=env('AWS_ACCESS_KEY_ID'),
+                  aws_secret_access_key=env('AWS_SECRET_ACCESS_KEY'))
 
 
 def format_number(num):
@@ -37,9 +46,9 @@ def user_info(request, username):
     #         "error": "You can only make one request per minute."
     #     }
     #     return Response(message, status=status.HTTP_202_ACCEPTED)
-    if user_request.calculation_count >= 3:
+    if user_request.calculation_count >= 5:
         message = {
-            "error": "You have exceeded the limit of 3 calculations."
+            "error": "You have exceeded the limit of 5 calculations."
         }
         return Response(message, status=status.HTTP_202_ACCEPTED)
 
@@ -96,6 +105,20 @@ def user_info(request, username):
         "post_count": format_number(user_info_response['data']['user']["edge_owner_to_timeline_media"]["count"])
 
     }
+
+    url = user_data.get('profile_picture')
+    res = requests.get(url)
+    bucket_name = 'ig-media'
+    key = os.path.basename(url).split('?')[0]
+    content = res.content
+
+    upload = s3.put_object(Bucket=bucket_name, Key=key, Body=content)
+    
+    # Get the URL of the uploaded image file
+    display_picture = s3.generate_presigned_url('get_object', Params={'Bucket': bucket_name, 'Key': key})
+
+    user_data["display_picture"] = display_picture
+
 
     # Parse media information
     posts = media_response['data']['user']["edge_owner_to_timeline_media"]["edges"]
