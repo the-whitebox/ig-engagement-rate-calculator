@@ -184,3 +184,20 @@ class CustomUserLogin(APIView):
             token = Token.objects.create(user=user)
             return Response({'access_token': str(token.key)})
 
+class Recaptcha(APIView):
+    def post(self, request):
+        ''' Begin reCAPTCHA validation '''
+        recaptcha_response = request.POST.get('g-recaptcha-response')
+        data = {
+            'secret': env('GOOGLE_RECAPTCHA_SECRET_KEY'),
+            'response': recaptcha_response
+        }
+        r = requests.post('https://www.google.com/recaptcha/api/siteverify', data=data)
+        result = r.json()
+        ''' End reCAPTCHA validation '''
+        print(result)
+        if result['success']:
+            return Response({'message': 'reCAPTCHA is valid', 'success': result['success']})
+        else:
+            return Response({'message': 'Invalid reCAPTCHA. Please try again.', 'success': result['success']})
+
